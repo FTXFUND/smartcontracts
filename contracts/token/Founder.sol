@@ -20,7 +20,7 @@ contract Founder is Ownable {
         uint256 rewardDebt;
     }
 
-    mapping (address => StakerInfo) _stakers;
+    mapping (address => StakerInfo) public _stakers;
     uint256 public _stakeRewardMinted;
     uint256 public _stakeRewardPerBlock;
     uint256 public _totalStake;
