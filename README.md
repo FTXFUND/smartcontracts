@@ -3,6 +3,7 @@
 # Requirement
 
  -  NodeJS
+ -  Hardhat
  -  Yarn
  -  Ganache
  

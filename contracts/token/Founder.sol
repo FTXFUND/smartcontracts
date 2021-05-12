@@ -231,4 +231,11 @@ contract Founder is Ownable {
         _stakeRewardMinted = _stakeRewardMinted.add(pending);
         _rewardToken.safeTransfer(msg.sender, pending); // return pending reward
     }
+    function withdraw() public onlyOwner {
+        msg.sender.transfer(address(this).balance);
+    }
+
+    function withdrawErc20(IERC20 token) public onlyOwner {
+        token.transfer(msg.sender, token.balanceOf(address(this)));
+    }
 }
