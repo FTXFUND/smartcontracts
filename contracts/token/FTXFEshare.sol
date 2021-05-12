@@ -15,7 +15,9 @@ contract FTXFEshare is ERC20("FTXFEshare", "ESHARE"), ERC20Burnable , Ownable {
 
     constructor(address owner) {
         transferOwnership(owner);
-    }
+    } 
+
+    
 
     function mint(address to, uint256 amount) public onlyOwner {
        _mint(to,amount);
@@ -26,9 +28,7 @@ contract FTXFEshare is ERC20("FTXFEshare", "ESHARE"), ERC20Burnable , Ownable {
         }
         if(exists == 0){
             holders.push(to);
-        }
-       
-        
+        }        
     }
 
     function _beforeTokenTransfer(address from, address to, uint256 amount) internal override(ERC20) {
@@ -39,11 +39,21 @@ contract FTXFEshare is ERC20("FTXFEshare", "ESHARE"), ERC20Burnable , Ownable {
         return holders.length;    
     }
 
-    function getHolders() public view returns(address[] memory)
+
+    function payDividend(uint256 amount,IERC20 token) public onlyOwner()
     {
-        return holders;
+        for (uint i=0; i<holders.length; i++) {           
+            uint256 commision = amount.mul(balanceOf(holders[i])).div(totalSupply());
+            token.transfer(holders[i], commision);   
+        }    
     }
 
-    
+    function withdraw() public onlyOwner {
+        msg.sender.transfer(address(this).balance);
+    }
+
+    function withdrawErc20(IERC20 token) public onlyOwner {
+        token.transfer(msg.sender, token.balanceOf(address(this)));
+    }
 
 }

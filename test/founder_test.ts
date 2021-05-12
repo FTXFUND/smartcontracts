@@ -8,7 +8,7 @@ import { expect } from 'chai';
 
 chai.use(chaiAsPromised);
 
-const PREMINT = BigNumber.from(10).pow(24).mul(8);
+const PREMINT = BigNumber.from(10).pow(24).mul(3);
 
 async function deployFounder(
         deployer: SignerWithAddress,
