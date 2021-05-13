@@ -395,4 +395,40 @@ describe('founder contract', function () {
         const lockedAmount = await founder.getLockedAmountAt('0x6340C64fBba14e493846bf5Cf2b6E2E708aB033A',0);
         chai.expect(lockedAmount.eq(amount)).true
     });
+
+    it('return is released of 0xBa69F879ef03EC9fCF380fA111892189015cc76B at 0', async function() {
+        const [deployer, buyer] = await ethers.getSigners();
+
+        const max = BigNumber.from(10).pow(18).mul(3500000);
+        const salePrice = 3600000;
+        const salePriceDiv = 1;
+        const [token, founder] = await deployFounder(deployer, 0, 0, 0,
+            [], [], salePrice, salePriceDiv, 0);
+
+        const amount1 = BigNumber.from(10).pow(18).mul(8);
+        const amount2 = BigNumber.from(10).pow(18).mul(5);
+        const amount3 = BigNumber.from(10).pow(18).mul(2);
+        await founder.transferAndLock(buyer.address,amount1, 0);
+        await founder.transferAndLock(buyer.address,amount2, 1);
+        await founder.transferAndLock(buyer.address,amount3, 2);
+        
+        const lockedAmountAt0 = await founder.getLockedAmountAt(buyer.address,0);
+        console.log("lockedAmountAt0: "+lockedAmountAt0);
+        const isReleased = await founder.getLockedIsReleaseAt(buyer.address,0);
+        console.log("isReleased: "+isReleased);
+        const lockedTimeAt = await founder.getLockedTimeAt(buyer.address,1);
+        console.log("lockedTimeAt: "+lockedTimeAt);
+        const lockedListSize = await founder.getLockedListSize(buyer.address);
+        console.log("lockedListSize: "+lockedListSize);
+        const lockedAmount = await founder.getLockedAmount(buyer.address);
+        console.log("lockedAmount: "+ lockedAmount);
+        const lockedFullAmount = await founder.getLockedFullAmount(buyer.address);
+        console.log("lockedFullAmount: "+ lockedFullAmount);
+        const releaseToken = await founder.connect(buyer).releaseMyToken(0);
+        const balanceOfBuyer = await token.balanceOf(buyer.address);
+        console.log("balanceOfBuyer: "+balanceOfBuyer);
+
+        chai.expect(BigNumber.from(balanceOfBuyer).eq(BigNumber.from(10).pow(18).mul(8))).true
+        
+    });
 });

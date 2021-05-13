@@ -36,7 +36,7 @@ const poolsInfo: { [index: string]: {address:string, share: number} } =
 // this will be total number of token mined from staking that cannot be exceeded
 const stakeRewardCap = BigNumber.from(10).pow(18).mul(50000000); // change this to expected amount
 // number of token per block, stakeRewardPerBlock = stakeRewardCap / time to mine (seconds) * 3
-const stakeRewardPerBlock = stakeRewardCap.mul(3).div(86400 * 365).mul(3);
+const stakeRewardPerBlock = stakeRewardCap.mul(3).div(86400 * 365).div(3);
 // number of token for above pools, poolRewardPerBlock = totalRewardForPools / time to mine (seconds) * 3
 const poolRewardPerBlock = BigNumber.from(10).pow(18); // change this later
 //number of block to generate pool reward
@@ -70,8 +70,8 @@ async function main() {
     const tokenAddress = token.address;
 
     const [pools, poolsShare] = mapPoolToParam();
-    console.log([tokenAddress, pools, poolsShare, stakeRewardCap,
-        stakeRewardPerBlock, poolRewardPerBlock, salePrice, salePriceDiv]);
+    console.log([tokenAddress, pools, poolsShare, stakeRewardCap.toString(),
+        stakeRewardPerBlock.toString(), poolRewardPerBlock.toString(), salePrice.toString(), salePriceDiv.toString(),poolRewardEndIn.toString()]);
 
     const Founder = await ethers.getContractFactory("Founder");
     const founder = await Founder.deploy(tokenAddress, pools, poolsShare, stakeRewardCap, 
