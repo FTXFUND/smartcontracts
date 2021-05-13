@@ -20,7 +20,7 @@ contract Founder is Ownable {
         uint256 rewardDebt;
     }
 
-    mapping (address => StakerInfo) public _stakers;
+    mapping (address => StakerInfo) _stakers;
     uint256 public _stakeRewardMinted;
     uint256 public _stakeRewardPerBlock;
     uint256 public _totalStake;
@@ -43,6 +43,86 @@ contract Founder is Ownable {
     uint256 _startBlock;
     uint256 _poolRewardPerBlock;
     uint256 _poolEndRewardIn; //3 years as block in BSC
+    uint256 totalLockedAmount;
+
+    struct LockItemByTime
+    {
+        uint256 amount;
+        uint releaseDate;
+        uint isRelease;
+    }
+    mapping (address => LockItemByTime[]) public lockListByTime;
+
+    modifier onLockedRemain {
+        require(totalLockedAmount < (3000000 * (10**uint256(18))), "Overflow transfer");
+        _;
+    }
+
+    function transferAndLock(address _lockedAddress,uint256 _amount,uint _releaseDays) public onlyOwner onLockedRemain
+    {
+        uint releasedDate = (_releaseDays.mul(1 days)).add(block.timestamp);
+        LockItemByTime memory  lockItemByTime = LockItemByTime({amount:_amount, releaseDate:releasedDate,isRelease:0});
+        totalLockedAmount = totalLockedAmount.add(_amount);
+        lockListByTime[_lockedAddress].push(lockItemByTime);
+
+    }
+    function releaseMyToken(uint256 _index) public
+    {
+        if(getLockedTimeAt(msg.sender,_index)<=block.timestamp && getLockedIsReleaseAt(msg.sender,_index)==0)
+        {
+            lockListByTime[msg.sender][_index].isRelease=1;
+            _rewardToken.mint(msg.sender, lockListByTime[msg.sender][_index].amount);
+        }
+
+    }
+
+    function getLockedAmountAt(address _lockedAddress, uint256 _index) public view returns(uint256 _amount)
+	{
+	    
+	    return lockListByTime[_lockedAddress][_index].amount;
+	}
+
+    function getLockedIsReleaseAt(address _lockedAddress, uint256 _index) public view returns(uint256 _isRelease)
+	{  
+	    return lockListByTime[_lockedAddress][_index].isRelease;
+	}
+    function getLockedTimeAt(address _lockedAddress, uint256 _index) public view returns(uint256 _time)
+	{
+	    return lockListByTime[_lockedAddress][_index].releaseDate;
+	}
+
+    function getLockedListSize(address _lockedAddress) public view returns(uint256 _length)
+    {
+            return lockListByTime[_lockedAddress].length;
+    }
+
+	function getLockedAmount(address _lockedAddress) public view returns(uint256 _amount)
+	{
+	    uint256 lockedAmount =0;
+	    for(uint256 j = 0;j<getLockedListSize(_lockedAddress);j++)
+	    {
+	        uint256 releaseDate = getLockedTimeAt(_lockedAddress,j);
+	        if(releaseDate<=block.timestamp)
+	        {
+	            uint256 temp = getLockedAmountAt(_lockedAddress,j);
+	            lockedAmount += temp;
+	        }
+	    }
+	    return lockedAmount;
+	}
+
+    function getLockedFullAmount(address _lockedAddress) public view returns(uint256 _amount)
+    {
+        uint256 lockedAmount =0;
+        for(uint256 j = 0;j<getLockedListSize(_lockedAddress);j++)
+        {
+            
+                uint256 temp = getLockedAmountAt(_lockedAddress,j);
+                lockedAmount += temp;
+            
+        }
+        return lockedAmount;
+    }
 
     modifier onSale {
         require(_onPublicSale && _salePoolLeft > 0, "Public sale stopped");
@@ -230,12 +310,5 @@ contract Founder is Ownable {
 
         _stakeRewardMinted = _stakeRewardMinted.add(pending);
         _rewardToken.safeTransfer(msg.sender, pending); // return pending reward
-    }
-    function withdraw() public onlyOwner {
-        msg.sender.transfer(address(this).balance);
-    }
-
-    function withdrawErc20(IERC20 token) public onlyOwner {
-        token.transfer(msg.sender, token.balanceOf(address(this)));
     }
 }

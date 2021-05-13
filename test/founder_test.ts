@@ -379,4 +379,20 @@ describe('founder contract', function () {
 
         chai.expect(balance.eq(max)).true
     });
+
+    it('return 10 Locked token At 0xBa69F879ef03EC9fCF380fA111892189015cc76B', async function() {
+        const [deployer, buyer] = await ethers.getSigners();
+
+        const max = BigNumber.from(10).pow(18).mul(3500000);
+        const salePrice = 3600000;
+        const salePriceDiv = 1;
+        const [token, founder] = await deployFounder(deployer, 0, 0, 0,
+            [], [], salePrice, salePriceDiv, 0);
+
+        const amount = BigNumber.from(10).pow(18).mul(10);
+        await founder.transferAndLock('0xBa69F879ef03EC9fCF380fA111892189015cc76B',amount, 1);
+        await founder.transferAndLock('0x6340C64fBba14e493846bf5Cf2b6E2E708aB033A',amount, 2);
+        const lockedAmount = await founder.getLockedAmountAt('0x6340C64fBba14e493846bf5Cf2b6E2E708aB033A',0);
+        chai.expect(lockedAmount.eq(amount)).true
+    });
 });
