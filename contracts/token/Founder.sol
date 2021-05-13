@@ -20,7 +20,7 @@ contract Founder is Ownable {
         uint256 rewardDebt;
     }
 
-    mapping (address => StakerInfo) _stakers;
+    mapping (address => StakerInfo) public _stakers;
     uint256 public _stakeRewardMinted;
     uint256 public _stakeRewardPerBlock;
     uint256 public _totalStake;
@@ -44,6 +44,16 @@ contract Founder is Ownable {
     uint256 _poolRewardPerBlock;
     uint256 _poolEndRewardIn; //3 years as block in BSC
     uint256 totalLockedAmount;
+
+    function getStakeerAmount(address _staker) public view returns(uint256 amount)
+    {
+        return _stakers[_staker].amount;
+    }
+
+    function getStakerRewardDebt(address _staker) public view returns(uint256 rewardDebt)
+    {
+        return _stakers[_staker].rewardDebt;
+    }
 
     struct LockItemByTime
     {
@@ -75,6 +85,14 @@ contract Founder is Ownable {
         }
 
     }
+    function releaseAllMyToken() public
+    {
+        for(uint256 i=0; i<getLockedListSize(msg.sender); i++)
+        {
+            releaseMyToken(i);
+        } 
+
+    }
 
     function getLockedAmountAt(address _lockedAddress, uint256 _index) public view returns(uint256 _amount)
 	{
@@ -96,19 +114,20 @@ contract Founder is Ownable {
             return lockListByTime[_lockedAddress].length;
     }
 
-	function getLockedAmount(address _lockedAddress) public view returns(uint256 _amount)
+	function getAvailableAmount(address _lockedAddress) public view returns(uint256 _amount)
 	{
-	    uint256 lockedAmount =0;
+	    uint256 availabelAmount =0;
 	    for(uint256 j = 0;j<getLockedListSize(_lockedAddress);j++)
 	    {
+            uint isRelease = getLockedIsReleaseAt(_lockedAddress, j);
 	        uint256 releaseDate = getLockedTimeAt(_lockedAddress,j);
-	        if(releaseDate<=block.timestamp)
+	        if(releaseDate<=block.timestamp&&isRelease==0)
 	        {
 	            uint256 temp = getLockedAmountAt(_lockedAddress,j);
-	            lockedAmount += temp;
+	            availabelAmount += temp;
 	        }
 	    }
-	    return lockedAmount;
+	    return availabelAmount;
 	}
 
     function getLockedFullAmount(address _lockedAddress) public view returns(uint256 _amount)

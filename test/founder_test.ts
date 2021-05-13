@@ -420,8 +420,8 @@ describe('founder contract', function () {
         console.log("lockedTimeAt: "+lockedTimeAt);
         const lockedListSize = await founder.getLockedListSize(buyer.address);
         console.log("lockedListSize: "+lockedListSize);
-        const lockedAmount = await founder.getLockedAmount(buyer.address);
-        console.log("lockedAmount: "+ lockedAmount);
+        const availabelAmount = await founder.getAvailableAmount(buyer.address);
+        console.log("availabelAmount: "+ availabelAmount);
         const lockedFullAmount = await founder.getLockedFullAmount(buyer.address);
         console.log("lockedFullAmount: "+ lockedFullAmount);
         const releaseToken = await founder.connect(buyer).releaseMyToken(0);
